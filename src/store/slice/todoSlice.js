@@ -1,8 +1,17 @@
 import React, { useState } from 'react'
-import { createSlice } from '@reduxjs/toolkit'
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
+export const fetchTodos= createAsyncThunk("fetchTodos",async ()=>{
+    const fetchedData=await fetch('https://dummyjson.com/todos')
+    const response=await fetchedData.json()
+    console.log(response)
+    return response;
+});
 
 const initialState = {
     todoList: [],
+    loading:false,
+    fetchedAPITodos:[],
+    isError:false,
 }
 
 const todoSlice = createSlice({
@@ -42,7 +51,19 @@ const todoSlice = createSlice({
         },
 
     },
-    extraReducers:
+    extraReducers:(builder)=>{
+        builder.addCase(fetchTodos.pending, (state,action)=>{
+            state.loading=true
+        })
+         builder.addCase(fetchTodos.fulfilled, (state,action)=>{
+             state.loading=false
+         state.fetchedAPITodos=action.payload.todos
+        })
+         builder.addCase(fetchTodos.rejected, (state,action)=>{
+            state.loading=false
+            state.isError=true
+        })
+    }
 })
 
 export const { addTodo, deleteTodo, editTodo} = todoSlice.actions
